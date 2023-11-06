@@ -1,0 +1,9 @@
+- API layer
+  - postgrest
+    - POST /reverse_geocode
+      - params: lat, lng
+      - returns: Distrito[nom_prov, nom_cant, nom_dist, cod_prov, cod_cant, cod_dist]
+- Frontend
+  - GH Pages
+  - localization api to get point
+  - input lat,lng (map api)
