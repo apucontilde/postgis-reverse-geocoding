@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+a {
+  @apply text-blue-500 hover:text-blue-400 hover:underline transition-all;
+}
+
+.mapdiv {
+  width: 100%;
+  height: 400px;
+}

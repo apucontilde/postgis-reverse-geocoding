@@ -14,7 +14,7 @@ CREATE FUNCTION encontrar_distrito(lat float, lng float, OUT nom_prov varchar(20
 AS $$
     SELECT D.nom_prov, D.nom_cant, D.nom_dist, D.cod_prov ::integer, D.cod_cant::integer, D.cod_dist::integer
     FROM distritos_cr D
-    WHERE ST_Contains(D.geom, ST_MakePoint(lat, lng)::geography::geometry);
+    WHERE ST_Contains(D.geom, ST_MakePoint(lng, lat)::geography::geometry);
 $$ LANGUAGE SQL IMMUTABLE;
 
 GRANT EXECUTE ON FUNCTION encontrar_distrito TO anon;
