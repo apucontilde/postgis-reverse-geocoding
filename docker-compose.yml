@@ -33,7 +33,7 @@ services:
       - "3000:3000"
     environment:
       PGRST_DB_URI: postgres://docker:docker@db:5432/gis
-      PGRST_OPENAPI_SERVER_PROXY_URI: http://127.0.0.1:3000
+      PGRST_OPENAPI_SERVER_PROXY_URI: http://0.0.0.0:3000
       PGRST_DB_ANON_ROLE: anon
     depends_on:
       - db
@@ -48,3 +48,19 @@ services:
       API_URL: http://localhost:3000/
     depends_on:
       - server
+
+  # ui:
+  #   image: encuentra_tu_distrito/ui
+  #   build: ./ui
+  #   depends_on:
+  #     - server
+  #   ports:
+  #     - "3001:3001"
+  #   expose: 
+  #     - "3001"
+  #   environment:
+  #     PORT: 3001
+  #     VITE_SERVER_URL: http://localhost:3000
+  #     NODE_ENV: development
+  #   command: npm run serve
+  
