@@ -10,11 +10,11 @@ GRANT CONNECT ON DATABASE gis TO anon;
 GRANT SELECT ON TABLE distritos_cr TO anon;
 GRANT EXECUTE ON FUNCTION st_contains TO anon;
 GRANT EXECUTE ON FUNCTION st_makepoint TO anon;
-CREATE FUNCTION encontrar_distrito(lat float, lng float, OUT nom_prov varchar(20), OUT nom_cant varchar(20), OUT nom_dist varchar(20), OUT cod_prov integer, OUT cod_cant integer, OUT cod_dist integer)
+CREATE FUNCTION encontrar_distrito(lng float, lat float, OUT nom_prov varchar(20), OUT nom_cant varchar(20), OUT nom_dist varchar(20), OUT cod_prov integer, OUT cod_cant integer, OUT cod_dist integer)
 AS $$
-    SELECT D.nom_prov, D.nom_cant, D.nom_dist, D.cod_prov ::integer, D.cod_cant::integer, D.cod_dist::integer
+    SELECT D.nom_prov, D.nom_cant, D.nom_dist, D.cod_prov::integer, D.cod_cant::integer, D.cod_dist::integer
     FROM distritos_cr D
-    WHERE ST_Contains(D.geom, ST_MakePoint(lat, lng)::geography::geometry);
+    WHERE ST_Contains(D.geom, ST_SetSRID(ST_MakePoint(lng, lat),4326)::geography::geometry);
 $$ LANGUAGE SQL IMMUTABLE;
 
 GRANT EXECUTE ON FUNCTION encontrar_distrito TO anon;

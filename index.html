@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,6 +15,7 @@
             padding: 20px;
             text-align: center;
         }
+
         #map {
             height: 300px;
             width: 100%;
@@ -21,6 +23,7 @@
             border: 1px solid #ddd;
             border-radius: 5px;
         }
+
         button {
             background-color: #4CAF50;
             border: none;
@@ -34,10 +37,12 @@
             cursor: pointer;
             border-radius: 5px;
         }
+
         #findDistrict {
             background-color: #2196F3;
         }
-        #result, #districtResult {
+
+        #result {
             margin-top: 20px;
             padding: 15px;
             border: 1px solid #ddd;
@@ -45,63 +50,54 @@
             background-color: #f9f9f9;
             display: none;
         }
+
         .error {
             color: red;
             margin-top: 10px;
         }
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            animation: spin 2s linear infinite;
-            margin: 10px auto;
-            display: none;
-        }
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
+
 <body>
     <h1>Geolocation Finder</h1>
     <p>Click the button below to find your current location:</p>
-    
+    <div id="map"></div>
+    <p id="error" class="error"></p>
     <button id="getLocation">Get My Location</button>
-    
+
     <div id="result">
         <h2>Your Location:</h2>
         <p id="latitude">Latitude: </p>
         <p id="longitude">Longitude: </p>
         <p id="accuracy">Accuracy: </p>
-        <button id="findDistrict">Find District Information</button>
-        <div class="loader" id="loader"></div>
+        <div id="districtResult">
+            <h4>District Information:</h2>
+                <p id="provincia">Provincia: </p>
+                <p id="canton">Cantón: </p>
+                <p id="distrito">Distrito: </p>
+        </div>
     </div>
-    
-    <div id="districtResult">
-        <h2>District Information:</h2>
-        <p id="provincia">Provincia: </p>
-        <p id="canton">Cantón: </p>
-        <p id="distrito">Distrito: </p>
-    </div>
-    
-    <div id="map"></div>
-    <p id="error" class="error"></p>
-
     <!-- OpenLayers JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/openlayers/4.6.5/ol.js"></script>
-    
+
     <script>
-        // Environment variable for API endpoint (in a real environment, this would be set differently)
-        const API_ENDPOINT =  "http://127.0.0.1:3000";
-        
+        const API_ENDPOINT = "http://127.0.0.1:3000";
+
         let currentLat = null;
         let currentLng = null;
         let map = null;
         let markerLayer = null;
-        
+
         // Initialize the map (without showing any location yet)
         function initMap() {
             // Default view (will be updated later)
@@ -109,7 +105,7 @@
                 center: [0, 0],
                 zoom: 2
             });
-            
+
             // Create the map
             map = new ol.Map({
                 target: 'map',
@@ -120,29 +116,29 @@
                 ],
                 view: view
             });
-            
+
             // Create an empty vector layer for the marker
             markerLayer = new ol.layer.Vector({
                 source: new ol.source.Vector()
             });
-            
+
             map.addLayer(markerLayer);
         }
-        
+
         // Update map with location
         function updateMap(lat, lng) {
             if (!map) {
                 initMap();
             }
-            
+
             // Convert lat/lng to the projection used by OpenLayers
             const position = ol.proj.fromLonLat([lng, lat]);
-            
+
             // Create a point feature for the marker
             const point = new ol.Feature({
                 geometry: new ol.geom.Point(position)
             });
-            
+
             // Add a style to the point
             point.setStyle(new ol.style.Style({
                 image: new ol.style.Circle({
@@ -156,55 +152,95 @@
                     })
                 })
             }));
-            
+
             // Clear previous markers and add the new one
             markerLayer.getSource().clear();
             markerLayer.getSource().addFeature(point);
-            
+
             // Center the map on the position
             map.getView().setCenter(position);
             map.getView().setZoom(14);
         }
-        
-        document.getElementById('getLocation').addEventListener('click', function() {
+
+
+        document.getElementById('getLocation').addEventListener('click', function () {
             const resultDiv = document.getElementById('result');
             const errorElement = document.getElementById('error');
             const latElement = document.getElementById('latitude');
             const longElement = document.getElementById('longitude');
             const accuracyElement = document.getElementById('accuracy');
             const districtResult = document.getElementById('districtResult');
-            
+
             // Clear previous results
             errorElement.textContent = '';
             resultDiv.style.display = 'none';
             districtResult.style.display = 'none';
-            
+
             // Check if geolocation is supported
             if (!navigator.geolocation) {
                 errorElement.textContent = 'Geolocation is not supported by your browser';
                 return;
             }
-            
+
             // Get current position
             navigator.geolocation.getCurrentPosition(
                 // Success callback
-                function(position) {
+                function (position) {
                     currentLat = position.coords.latitude;
                     currentLng = position.coords.longitude;
                     const accuracy = position.coords.accuracy;
-                    
+
                     latElement.textContent = `Latitude: ${currentLat.toFixed(6)}`;
                     longElement.textContent = `Longitude: ${currentLng.toFixed(6)}`;
                     accuracyElement.textContent = `Accuracy: ${accuracy.toFixed(2)} meters`;
-                    
+
                     resultDiv.style.display = 'block';
-                    
+
                     // Update the map with the location
                     updateMap(currentLat, currentLng);
+
+                    const districtResult = document.getElementById('districtResult');
+                    const errorElement = document.getElementById('error');
+
+                    // Clear previous error
+                    errorElement.textContent = '';
+                    districtResult.style.display = 'none';
+
+                    // Construct the API URL
+                    const apiUrl = `${API_ENDPOINT}/rpc/encontrar_distrito?lng=${currentLng}&lat=${currentLat}`;
+
+                    // Send POST request to the API
+                    fetch(apiUrl, {
+                        method: 'GET',
+                        headers: {
+                            'accept': 'application/json'
+                        }
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                console.error(response.error)
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            // Display the results
+                            document.getElementById('provincia').textContent = `Provincia: ${data.nom_prov}`;
+                            document.getElementById('canton').textContent = `Cantón: ${data.nom_cant}`;
+                            document.getElementById('distrito').textContent = `Distrito: ${data.nom_dist}`;
+
+                            // Show the results
+                            districtResult.style.display = 'block';
+
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            errorElement.textContent = `Error fetching district information: ${error.message}`;
+                        });
                 },
                 // Error callback
-                function(error) {
-                    switch(error.code) {
+                function (error) {
+                    switch (error.code) {
                         case error.PERMISSION_DENIED:
                             errorElement.textContent = "User denied the request for Geolocation.";
                             break;
@@ -227,59 +263,14 @@
                 }
             );
         });
-        
-        document.getElementById('findDistrict').addEventListener('click', function() {
-            if (currentLat === null || currentLng === null) {
-                document.getElementById('error').textContent = "Please get your location first.";
-                return;
-            }
-            
-            const loader = document.getElementById('loader');
-            const districtResult = document.getElementById('districtResult');
-            const errorElement = document.getElementById('error');
-            
-            // Clear previous error and show loader
-            errorElement.textContent = '';
-            districtResult.style.display = 'none';
-            loader.style.display = 'block';
-            
-            // Construct the API URL
-            const apiUrl = `${API_ENDPOINT}/rpc/encontrar_distrito?lat=${currentLat}&lng=${currentLng}`;
-            
-            // Send POST request to the API
-            fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Display the results
-                document.getElementById('provincia').textContent = `Provincia: ${data.nom_prov}`;
-                document.getElementById('canton').textContent = `Cantón: ${data.nom_cant}`;
-                document.getElementById('distrito').textContent = `Distrito: ${data.nom_dist}`;
-                
-                // Show the results and hide loader
-                districtResult.style.display = 'block';
-                loader.style.display = 'none';
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                errorElement.textContent = `Error fetching district information: ${error.message}`;
-                loader.style.display = 'none';
-            });
-        });
-        
+
+
+
         // Initialize the map when the page loads
-        window.onload = function() {
+        window.onload = function () {
             initMap();
         };
     </script>
 </body>
+
 </html>
